@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Quote Viewer</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        .positive {
+            color: green;
+        }
+        .negative {
+            color: red;
+        }
+        .error {
+            color: red;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Quote Viewer</h1>
+        <div class="search-box">
+            <input type="text" id="symbol" placeholder="Enter stock symbol (e.g., AAPL)">
+            <button onclick="getQuote()">Get Quote</button>
+        </div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function getQuote() {
+            const symbol = $('#symbol').val().trim();
+            if (!symbol) {
+                $('#result').html('<p class="error">Please enter a stock symbol</p>').show();
+                return;
+            }
+
+            $.ajax({
+                url: '/quote',
+                method: 'POST',
+                data: { symbol: symbol },
+                success: function(response) {
+                    if (response.error) {
+                        $('#result').html(`<p class="error">${response.error}</p>`).show();
+                        return;
+                    }
+
+                    const changeClass = response.change.startsWith('+') ? 'positive' : 'negative';
+                    const html = `
+                        <h3>${response.name} (${response.symbol})</h3>
+                        <p>Current Price: ${response.current_price}</p>
+                        <p>Change: <span class="${changeClass}">${response.change} (${response.change_percent})</span></p>
+                        <p><small>Last updated: ${response.timestamp}</small></p>
+                    `;
+                    $('#result').html(html).show();
+                },
+                error: function() {
+                    $('#result').html('<p class="error">Error fetching stock data. Please try again.</p>').show();
+                }
+            });
+        }
+
+        $('#symbol').keypress(function(e) {
+            if (e.which == 13) {
+                getQuote();
+            }
+        });
+    </script>
+</body>
+</html>
