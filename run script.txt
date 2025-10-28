@@ -1,0 +1,5 @@
+1. Make sure you download the code into your local.
+2. install dependencies =  pip install yfinance --upgrade
+3. run the script =  just type "python finance_quote.py" to run the code.
+
+ 
